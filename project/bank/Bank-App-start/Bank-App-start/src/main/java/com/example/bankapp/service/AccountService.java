@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -130,5 +131,25 @@ public class AccountService implements UserDetailsService {
         transactionRepository.save(cerditTransaction);
 
 
+    }
+    public Account updateAccount(String username, String newPassword) {
+        Account account = findAccountByUsername(username);
+        if (newPassword != null && !newPassword.isEmpty()) {
+            account.setPassword(passwordEncoder.encode(newPassword));
+        }
+        return accountRepository.save(account);
+    }
+    public void updatePassword(Account account, String newPassword) {
+        account.setPassword(passwordEncoder.encode(newPassword)); // Encode the new password
+        accountRepository.save(account); // Save the updated account
+    }
+    public List<Transaction> searchTransactions(Account account, String type, LocalDate startDate, LocalDate endDate) {
+        if (type != null && !type.isEmpty()) {
+            return transactionRepository.findByAccountIdAndType(account.getId(), type);
+        } else if (startDate != null && endDate != null) {
+            return transactionRepository.findByAccountIdAndTimestampBetween(account.getId(), startDate, endDate);
+        } else {
+            return getTransactionHistory(account); // Return all transactions if no filters are applied
+        }
     }
 }
