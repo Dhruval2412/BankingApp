@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Profile - Goldencat Bank</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff; /* Set background to white */
+            color: #333; /* Darker text for better readability */
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .navbar-custom {
+            background-color: #007bff; /* Blue navbar */
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .navbar-custom a {
+            color: #ffffff !important;
+        }
+
+        .navbar-custom .navbar-brand {
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin-top: 80px; /* Margin for the content to be below the navbar */
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333; /* Darker color for the heading */
+        }
+
+        .text-success {
+            color: #28a745 !important;
+        }
+
+        .text-danger {
+            color: #dc3545 !important;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <a class="navbar-brand" href="#">Goldencat Bank</a>
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="/transactions">Transactions</a></li>
+        <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li> <!-- Profile Link -->
+        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="container">
+    <h1>User Profile</h1>
+    <div th:if="${success}" class="alert alert-success" role="alert">
+        <p th:text="${success}"></p>
+    </div>
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            Profile Information
+        </div>
+        <div class="card-body">
+            <form action="#" th:action="@{/profile}" method="post">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" class="form-control" id="username" name="username" th:value="${account.username}" readonly />
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassword">New Password:</label>
+                    <input type="password" class="form-control" id="newPassword" name="newPassword" />
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password:</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
