@@ -1,24 +1,20 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Transaction History - Goldencat Bank</title>
+    <title>Search Transaction History - Goldencat Bank</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Include Chart.js -->
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(to right, #000000, #ffd700);
-            color: #ffffff;
+            background-color: #f8f9fa; /* Light gray background for better contrast */
+            color: #333; /* Darker text for better readability */
             margin: 0;
             padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            flex-direction: column;
         }
 
         .navbar-custom {
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: #007bff; /* Blue navbar */
             position: fixed;
             top: 0;
             width: 100%;
@@ -31,56 +27,89 @@
 
         .navbar-custom .navbar-brand {
             font-weight: bold;
+            font-size: 1.5rem;
         }
 
-        .container {
-            max-width: 1000px;
-            margin-top: 80px; /* Reduced margin for the table to be closer to the top */
-            text-align: center;
+        .dashboard-container {
+            max-width: 800px;
+            margin-top: 80px; /* Increased margin for navbar */
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white for the container */
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
         }
 
         h2 {
             margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        .table-custom {
-            background-color: rgba(0, 0, 0, 0.8); /* Darker background for better contrast */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-            overflow-x: auto; /* Ensures table is responsive */
+        .form-container {
+            background-color: rgba(240, 240, 240, 0.8); /* Light gray for forms */
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px; /* Space between forms and table */
         }
 
-        .table-striped tbody tr:nth-of-type(odd) {
-            background-color: rgba(255, 255, 255, 0.1); /* Slightly lighter row color */
+        .btn-primary {
+            background-color: #007bff; /* Blue button */
+            border: none;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .table-striped td, .table-striped th {
-            color: #ffffff; /* White text color for visibility */
-            font-weight: bold; /* Bolder text for readability */
-            padding: 15px; /* Increase padding for better spacing */
-            border-bottom: 1px solid #ffd700; /* Yellow border for rows */
+        .btn-primary:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            color: #ffffff;
+            transform: scale(1.05);
         }
 
-        .table-striped th {
-            background-color: rgba(255, 215, 0, 0.2); /* Light golden background for headers */
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
         }
 
-        .text-success {
-            color: #28a745 !important;
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
 
-        .text-danger {
-            color: #dc3545 !important;
+        th {
+            background-color: #007bff; /* Blue header */
+            color: white;
         }
 
-        .custom-link {
+        tr:hover {
+            background-color: #f1f1f1; /* Light gray on row hover */
+        }
+
+        .error {
+            color: #ff4c4c;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .footer {
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 0;
+            font-size: 14px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer a {
             color: #ffd700;
             text-decoration: none;
             font-weight: bold;
         }
 
-        .custom-link:hover {
+        .footer a:hover {
             color: #ffecb3;
             text-decoration: underline;
         }
@@ -91,39 +120,79 @@
     <a class="navbar-brand" href="#">Goldencat Bank</a>
     <ul class="navbar-nav ml-auto">
         <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="/transactions">Transactions</a></li>
-        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+        <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="/searchtransactions">Search Transactions</a></li>
+        <li class="nav-item"><a class="nav-link " href="/logout">Logout</a></li>
     </ul>
 </nav>
 
-<div class="container">
-    <h2 class="text-center">Transaction History</h2>
-    <div class="table-responsive table-custom">
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Date</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="transaction : ${transactions}">
-                <td th:text="${transaction.id}"></td>
-                <td th:text="${transaction.type}"></td>
-                <td th:text="${transaction.amount}"
-                    th:classappend="${transaction.type.contains('Transfer In') || transaction.type == 'Deposit'} ? 'text-success' : 'text-danger'">
-                    <span th:text="${transaction.type.contains('Transfer In') || transaction.type == 'Deposit'} ? '+$' + transaction.amount : '-$' + transaction.amount"></span>
-                </td>
-                <td th:text="${transaction.timestamp}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+<div class="container dashboard-container">
+    <h2>Transaction History</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="transaction : ${transactions}">
+            <td th:text="${transaction.type}"></td>
+            <td th:text="${transaction.amount}"></td>
+            <td th:text="${transaction.timestamp}"></td>
+        </tr>
+        </tbody>
+    </table>
 
-    <p class="text-center"><a href="/dashboard" class="custom-link">Back to Dashboard</a></p>
+    <h2>Transaction Insights</h2>
+    <canvas id="transactionChart" width="400" height="200"></canvas> <!-- Canvas for Chart.js -->
+
+    <p th:if="${error != null}" th:text="${error}" class="error text-center mt-3"></p>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Sample data for the chart
+    const transactionData = {
+        labels: ['Withdraw', 'Deposit', 'Transaction', 'Saving'], // Updated categories
+        datasets: [{
+            label: 'Transaction Amount',
+            data: [100, 200, 150, 80], // Sample transaction amounts
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)'
+            ],
+            borderWidth: 1
+        }]
+    };
+
+    const config = {
+        type: 'bar',
+        data: transactionData,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    };
+
+    const transactionChart = new Chart(
+        document.getElementById('transactionChart'),
+        config
+    );
+</script>
 </body>
 </html>
